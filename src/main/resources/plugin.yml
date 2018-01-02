@@ -1,0 +1,7 @@
+name: ShopHouse
+version: ${project.version}
+main: fr.bmqt.shophouse.ShopHouse
+depend: [WorldEdit, WorldGuard]
+authors: [JSONObject]
+description: Plugin de vente d'habitation à la maniere des cité des sable etre autre cds de course a l'émeraude.
+website: http://bmqt.fr
