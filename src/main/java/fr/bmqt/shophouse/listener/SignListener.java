@@ -17,6 +17,9 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by Baptiste on 02/01/2018 for ShopHouse.
  */
@@ -89,15 +92,10 @@ public class SignListener implements Listener {
             return;
 
         Player player = e.getPlayer();
-        ItemStack item = player.getInventory().getItemInMainHand();
 
-        if (item.getType() != Material.EMERALD){
-            player.sendMessage("§cVous n'avez pas d'émeraudes dans votre main principal!");
-            return;
-        }
 
-        if (item.getAmount() < price){
-            player.sendMessage("§cVous n'avez pas assez d'émeraudes dans votre main principal!");
+        if (getAmountOf(player, Material.EMERALD) < price){
+            player.sendMessage("§cVous n'avez pas assez d'émeraudes sur vous pour acheter cette habitation !");
             return;
         }
 
@@ -116,16 +114,41 @@ public class SignListener implements Listener {
             e1.printStackTrace();
         }
 
-        if (item.getAmount() > price)
-            item.setAmount(item.getAmount()-price);
-        else
-            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+        debit(player, Material.EMERALD, price);
 
         player.sendMessage("§aVous venez d'acheter l'habitation §2" + sign.getLine(1) + " §apour la somme de §2" + price + " §aémeraudes !");
 
         sign.setLine(2, "§2Propriétaire:");
         sign.setLine(3, "§4" + player.getName());
         sign.update();
+
+    }
+
+
+    public static int getAmountOf(Player player, Material material) {
+        int i = 0;
+        for (ItemStack itemStack : player.getInventory())
+            if (itemStack != null && itemStack.getType() == material)
+                i += itemStack.getAmount();
+        return i;
+    }
+
+
+    public static void debit(Player player, Material type, int amount) {
+        HashMap<Integer, ? extends ItemStack> all = player.getInventory().all(type);
+        for (Map.Entry<Integer, ? extends ItemStack> entry : all.entrySet()) {
+            ItemStack itemStack       = entry.getValue();
+            int       itemStackAmount = itemStack.getAmount();
+
+            if (amount <= itemStackAmount) {
+                itemStack.setAmount(itemStackAmount - amount);
+                break;
+            } else {
+                amount -= itemStackAmount;
+                player.getInventory().setItem(entry.getKey(), null);
+            }
+        }
+        player.updateInventory();
 
     }
 
